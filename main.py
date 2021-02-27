@@ -1,9 +1,16 @@
+"""CSV analyzer
+
+Usage:
+    main.py filter_for_housing_votes <name_with_underscores>
+"""
+
 import csv
 import os
 import re
 import string
 
 from collections import namedtuple
+from docopt import docopt
 from pathlib import Path
 
 Action = namedtuple("Action", ["file_number", "action_date", "title", "vote"])
@@ -96,9 +103,9 @@ class VotingRecord(object):
                     break
         return retVal
 
-def main():
-    file_path = Path("sfgov_legislation") / "dean_preston_voting_record.csv"
-    voting_record = VotingRecord("Dean Preston", file_path)
+def filter_for_housing_legislation(name):
+    file_path = Path("sfgov_legislation") / f"{name}.csv"
+    voting_record = VotingRecord(name, file_path)
     street_names = get_street_name(Path("geographic_data") / "street_names.csv")
     actions_with_roads = voting_record.find_legislation_referencing_streets(street_names)
 
@@ -112,4 +119,7 @@ def main():
             writer.writerow(action)
 
 if __name__ == "__main__":
-    main()
+    arguments = docopt(__doc__)
+    print(arguments)
+    if arguments["filter_for_housing_votes"]:
+        filter_for_housing_legislation(arguments["<name_with_underscores>"])
