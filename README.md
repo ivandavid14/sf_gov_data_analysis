@@ -12,3 +12,5 @@ will have a focus on that
   - It seems like everybody votes `aye` for everything though :/
   - Not really done yet, but not complicated to implement
 
+## Links
+[interesting_fings](interesting_findings/README.md)

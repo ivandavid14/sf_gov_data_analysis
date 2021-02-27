@@ -149,8 +149,8 @@ def overlap_votes(supervisor_1, supervisor_2):
     num_actions = len(similar_actions) + len(dissimilar_actions)
     print(f"Number of similar votes: {len(similar_actions)}")
     print(f"Number of dissimilar votes: {len(dissimilar_actions)}")
-    print(f"Percentage of agreement amongst actions where they both were elected: %{100 * len(similar_actions) / num_actions : .2f}")
-    print(f"Percentage of disagreement amongst actions where they were elected: %{100 * len(dissimilar_actions) / num_actions : .2f}")
+    print(f"Percentage of agreement amongst actions while they both were elected: %{100 * len(similar_actions) / num_actions : .2f}")
+    print(f"Percentage of disagreement amongst actions while they were elected: %{100 * len(dissimilar_actions) / num_actions : .2f}")
     print("------------------------------")
 
     for dissimilar_action in dissimilar_actions:
