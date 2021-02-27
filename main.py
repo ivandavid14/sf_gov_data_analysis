@@ -2,6 +2,7 @@
 
 Usage:
     main.py filter_for_housing_votes <name_with_underscores>
+    main.py get_overlap <supervisor_1> <supervisor_2>
 """
 
 import csv
@@ -103,6 +104,24 @@ class VotingRecord(object):
                     break
         return retVal
 
+    def get_overlap(self, other_voting_record, street_names):
+        their_votes = {
+            action.file_number: action for action in other_voting_record.find_legislation_referencing_streets(street_names)
+        }
+        my_overlapping_votes = {
+            action.file_number: action for action in self.find_legislation_referencing_streets(street_names) if action.file_number in their_votes
+        }
+
+        similar_actions = []
+        dissimilar_actions = []
+        for file_number, my_action in my_overlapping_votes.items():
+            if their_votes[file_number].vote == my_action.vote:
+                similar_actions.append(my_action)
+            else:
+                dissimilar_actions.append((my_action, my_action.vote, their_votes[file_number].vote))
+        return (similar_actions, dissimilar_actions)
+            
+
 def filter_for_housing_legislation(name):
     file_path = Path("sfgov_legislation") / f"{name}.csv"
     voting_record = VotingRecord(name, file_path)
@@ -118,8 +137,32 @@ def filter_for_housing_legislation(name):
         for action in actions_with_roads:
             writer.writerow(action)
 
+def overlap_votes(supervisor_1, supervisor_2):
+    street_names = get_street_name(Path("geographic_data") / "street_names.csv")
+    supervisor_1_path = Path("sfgov_legislation") / f"{supervisor_1}.csv"
+    supervisor_2_path = Path("sfgov_legislation") / f"{supervisor_2}.csv"
+
+    supervisor_1_record = VotingRecord(supervisor_1, supervisor_1_path)
+    supervisor_2_record = VotingRecord(supervisor_2, supervisor_2_path)
+
+    similar_actions, dissimilar_actions = supervisor_1_record.get_overlap(supervisor_2_record, street_names)
+    num_actions = len(similar_actions) + len(dissimilar_actions)
+    print(f"Number of similar votes: {len(similar_actions)}")
+    print(f"Number of dissimilar votes: {len(dissimilar_actions)}")
+    print(f"Percentage of agreement amongst actions where they both were elected: %{100 * len(similar_actions) / num_actions : .2f}")
+    print(f"Percentage of disagreement amongst actions where they were elected: %{100 * len(dissimilar_actions) / num_actions : .2f}")
+    print("------------------------------")
+
+    for dissimilar_action in dissimilar_actions:
+        print(dissimilar_action[0].title)
+        print(f"{supervisor_1}: {dissimilar_action[1]}")
+        print(f"{supervisor_2}: {dissimilar_action[2]}")
+        print("----------------------------")
+
 if __name__ == "__main__":
     arguments = docopt(__doc__)
-    print(arguments)
     if arguments["filter_for_housing_votes"]:
         filter_for_housing_legislation(arguments["<name_with_underscores>"])
+    elif arguments["get_overlap"]:
+        overlap_votes(arguments["<supervisor_1>"], arguments["<supervisor_2>"])
+
